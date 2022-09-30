@@ -79,7 +79,26 @@ function createToast({name, state, color}) {
         toastInfo.remove()
     }, 2500)}
 
+const cookiesList = document.querySelector(".cookie-list");
+const displayCookieBtn = document.querySelector(".display-cookie-btn")
+const infoTxt = document.querySelector(".info-txt")
 
+displayCookieBtn.addEventListener("click", displayCookies);
 
+function displayCookies() {
+    // regex remplace tous les global espace par "" et split pas ; en renverant voir regex101.com
+    const cookies = document.cookie.replace(/\s/g, "").split(";").reverse()
+    console.log(cookies);
 
+    // S'il n'y a pas de cookies
+    if(!cookies[0]) {
+        infoTxt.textContent = "Pas de cookies à afficher, créez-en un!";
+        setTimeout(() =>{
+        infoTxt.textContent = "";
+        }, 1500)
+        return;
+    }
+
+  createElements(cookies)
+}
 
