@@ -53,6 +53,11 @@ function createCookie(newCookie) {
     if(cookiesList.children.length) {
         displayCookies()
       }
+      
+      // une manière de savoir si la liste à des enfants si on regarde quelque chose
+    if(cookiesList.children.length) {
+        displayCookies();
+    }
 }
 
 function doesCookieExist(name) {
@@ -79,22 +84,31 @@ function createToast({name, state, color}) {
         toastInfo.remove()
     }, 2500)}
 
-const cookiesList = document.querySelector(".cookie-list");
+const cookiesList = document.querySelector(".cookies-list");
 const displayCookieBtn = document.querySelector(".display-cookie-btn")
 const infoTxt = document.querySelector(".info-txt")
 
 displayCookieBtn.addEventListener("click", displayCookies);
 
+let lock = false
 function displayCookies() {
+    // quand un if n'a qu'une seule chose à faire on peut le mettre sur une seule ligne
+    if(cookiesList.children.length) cookiesList.textContent = "";
     // regex remplace tous les global espace par "" et split pas ; en renverant voir regex101.com
     const cookies = document.cookie.replace(/\s/g, "").split(";").reverse()
     console.log(cookies);
 
     // S'il n'y a pas de cookies
+    lock=false;
     if(!cookies[0]) {
+        if(lock) return
+        // block le fait de pouvoir spamer le message
+        lock = true;
         infoTxt.textContent = "Pas de cookies à afficher, créez-en un!";
+        
         setTimeout(() =>{
         infoTxt.textContent = "";
+        lock = false
         }, 1500)
         return;
     }
@@ -102,3 +116,29 @@ function displayCookies() {
   createElements(cookies)
 }
 
+function createElements(cookies) {
+    cookies.forEach(cookie => {
+        // créer un nouveau tableau en séparant les élémets là ou se trouve des espaces
+        const formatCookie = cookie.split('=');
+        const listItem = document.createElement('li');
+        const name = decodeURIComponent(formatCookie[0]);
+        listItem.innerHTML = 
+        `
+            <p>
+                <span>Nom</span> : ${name}
+            </p>
+            <p>
+                <span>Valeur</span> : ${decodeURIComponent(formatCookie[1])}
+            </p>
+            <button>X</button>
+        `
+        listItem.querySelector('button').addEventListener('click', e => {
+            createToast({name: name, state: 'supprimé', color: 'crimson'})
+            // on détruit un cookie
+            document.cookie = `${formatCookie[0]}=; expires=${new Date(0)}`
+            // On supprime du DOM
+            e.target.parentElement.remove();
+        });
+        cookiesList.appendChild(listItem);
+    })
+}
